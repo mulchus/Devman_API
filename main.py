@@ -10,12 +10,13 @@ from aiogram.utils.exceptions import NetworkError
 from aiohttp.client_exceptions import ClientConnectorError
 from requests.exceptions import ConnectionError, ReadTimeout
 from dotenv import load_dotenv
+from textwrap import dedent
 
 
 load_dotenv()
 devman_token = os.environ.get('DEVMAN_TOKEN')
-bot = Bot(token=os.environ.get('BOT_TOKEN'))
-user_id = os.environ.get('USER_ID')
+bot = Bot(token=os.environ.get('TELEGRAM_TOKEN'))
+user_id = os.environ.get('TELEGRAM_USER_ID')
 storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 logging.basicConfig(level=logging.INFO)
@@ -40,14 +41,19 @@ async def send_welcome(message: types.Message):
                 await message.answer('Нет обновлений.')
             elif devman_response_in_format['status'] == 'found':
                 payload['timestamp'] = devman_response_in_format['last_attempt_timestamp']
-                reply_message = f'Преподаватель проверил работу "{devman_response_in_format["new_attempts"][0]["lesson_title"]}"!\n' \
-                                f'{devman_response_in_format["new_attempts"][0]["lesson_url"]}\n'
+                reply_message = f'''Преподаватель проверил работу \
+"{devman_response_in_format["new_attempts"][0]["lesson_title"]}"! \
+{devman_response_in_format["new_attempts"][0]["lesson_url"]}
+'''
                 if devman_response_in_format["new_attempts"][0]["is_negative"]:
-                    reply_message = f'{reply_message} К сожалению в работе нашлись ошибки.'
+                    reply_message = f'''{reply_message} \
+К сожалению в работе нашлись ошибки.
+'''
                 else:
-                    reply_message = f'{reply_message} Преподавателю все понравилось. ' \
-                                    f'Можно приступать к следующему уроку!'
-                await message.answer(reply_message)
+                    reply_message = f'''{reply_message} \
+Преподавателю все понравилось. Можно приступать к следующему уроку!
+'''
+                await message.answer(dedent(reply_message))
         except ReadTimeout:
             logging.info(f'Превышено время ожидания. Прошло {timeout} сек. Повтор.')
             await message.answer(f'Превышено время ожидания. Прошло {timeout} сек. Повтор.')
