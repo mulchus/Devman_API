@@ -3,32 +3,26 @@ import os
 import json
 import time
 import logging
+import telegram
+import asyncio
 
-from aiogram import Bot, Dispatcher, executor, types
-from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from aiogram.utils.exceptions import NetworkError
-from aiohttp.client_exceptions import ClientConnectorError
 from requests.exceptions import ConnectionError, ReadTimeout
 from dotenv import load_dotenv
 from textwrap import dedent
 
 
-load_dotenv()
-devman_token = os.environ.get('DEVMAN_TOKEN')
-bot = Bot(token=os.environ.get('TELEGRAM_TOKEN'))
-user_id = os.environ.get('TELEGRAM_USER_ID')
-storage = MemoryStorage()
-dp = Dispatcher(bot, storage=storage)
-logging.basicConfig(level=logging.INFO)
-
-
-@dp.message_handler(commands=['start'])
-async def send_welcome(message: types.Message):
-    await message.answer('Стартую. Направляю запрос Devmanу.')
+async def main():
+    load_dotenv()
+    devman_token = os.environ.get('DEVMAN_TOKEN')
+    bot = telegram.Bot(os.environ.get('TELEGRAM_TOKEN'))
+    user_id = os.environ.get('TELEGRAM_USER_ID')
+    logging.basicConfig(level=logging.INFO)
     url = 'https://dvmn.org/api/long_polling/'
     headers = {'Authorization': f'Token {devman_token}'}
     timeout = 100
     payload = {'timestamp': None}
+    await bot.send_message(user_id, 'Стартую. Направляю запрос Devmanу.')
+
     while True:
         try:
             response = requests.get(url, headers=headers, params=payload, timeout=timeout)
@@ -38,7 +32,7 @@ async def send_welcome(message: types.Message):
             logging.info(json.dumps(devman_response_in_format, indent=2, ensure_ascii=False))
             if devman_response_in_format['status'] == 'timeout':
                 payload['timestamp'] = devman_response_in_format['timestamp_to_request']
-                await message.answer('Нет обновлений.')
+                await bot.send_message(user_id, 'Нет обновлений.')
             elif devman_response_in_format['status'] == 'found':
                 payload['timestamp'] = devman_response_in_format['last_attempt_timestamp']
                 reply_message = f'''Преподаватель проверил работу \
@@ -53,14 +47,14 @@ async def send_welcome(message: types.Message):
                     reply_message = f'''{reply_message} \
 Преподавателю все понравилось. Можно приступать к следующему уроку!
 '''
-                await message.answer(dedent(reply_message))
+                await bot.send_message(user_id, dedent(reply_message))
         except ReadTimeout:
             logging.info(f'Превышено время ожидания. Прошло {timeout} сек. Повтор.')
-            await message.answer(f'Превышено время ожидания. Прошло {timeout} сек. Повтор.')
-        except (ConnectionError, NetworkError, ClientConnectorError) as error:
-            logging.info(f'Ошибка. Потеря соединения. {error}')
+            await bot.send_message(user_id, f'Превышено время ожидания. Прошло {timeout} сек. Повтор.')
+        except (ConnectionError, telegram.error.NetworkError, telegram.error.TelegramError) as error:
+            logging.info(f'Потеря или ошибка соединения. {error}')
             time.sleep(5)
 
 
 if __name__ == '__main__':
-    executor.start_polling(dp)
+    asyncio.run(main())
