@@ -29,7 +29,7 @@ python main.py
 ```
 
 ## Пример работы скрипта
-![image](https://github.com/mulchus/Devman_API/blob/2ff3b225f9107cd3fc707e5d6ff387c361ade3c2/msg387452657-59916.jpg)
+![image](msg387452657-59916.jpg)
 
 ## Цели проекта
 
