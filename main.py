@@ -28,25 +28,22 @@ async def main():
             response = requests.get(url, headers=headers, params=payload, timeout=timeout)
             response.raise_for_status()
             logging.info(response.url)
-            devman_response_in_format = response.json()
-            logging.info(json.dumps(devman_response_in_format, indent=2, ensure_ascii=False))
-            if devman_response_in_format['status'] == 'timeout':
-                payload['timestamp'] = devman_response_in_format['timestamp_to_request']
+            about_checks = response.json()
+            logging.info(json.dumps(about_checks, indent=2, ensure_ascii=False))
+            if about_checks['status'] == 'timeout':
+                payload['timestamp'] = about_checks['timestamp_to_request']
                 await bot.send_message(user_id, 'Нет обновлений.')
-            elif devman_response_in_format['status'] == 'found':
-                payload['timestamp'] = devman_response_in_format['last_attempt_timestamp']
-                reply_message = f'''Преподаватель проверил работу \
-"{devman_response_in_format["new_attempts"][0]["lesson_title"]}"! \
-{devman_response_in_format["new_attempts"][0]["lesson_url"]}
-'''
-                if devman_response_in_format["new_attempts"][0]["is_negative"]:
-                    reply_message = f'''{reply_message} \
-К сожалению в работе нашлись ошибки.
-'''
+            elif about_checks['status'] == 'found':
+                payload['timestamp'] = about_checks['last_attempt_timestamp']
+                reply_message = dedent(f'''
+                    Преподаватель проверил работу:
+                    "{about_checks["new_attempts"][0]["lesson_title"]}"!
+                    {about_checks["new_attempts"][0]["lesson_url"]}
+                ''')
+                if about_checks["new_attempts"][0]["is_negative"]:
+                    reply_message += 'К сожалению в работе нашлись ошибки.'
                 else:
-                    reply_message = f'''{reply_message} \
-Преподавателю все понравилось. Можно приступать к следующему уроку!
-'''
+                    reply_message += 'Преподавателю все понравилось. Можно приступать к следующему уроку!'
                 await bot.send_message(user_id, dedent(reply_message))
         except ReadTimeout:
             logging.info(f'Превышено время ожидания. Прошло {timeout} сек. Повтор.')
