@@ -52,6 +52,9 @@ def main():
         except (ConnectionError, telegram.error.NetworkError, telegram.error.TelegramError) as error:
             logger.error(f'Потеря или ошибка соединения. {error}')
             time.sleep(5)
+        except Exception as err:
+            logger.error('Бот упал с ошибкой:')
+            logger.exception(err)
 
         time.sleep(pause_verification)
 
