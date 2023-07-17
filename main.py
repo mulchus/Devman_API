@@ -12,7 +12,7 @@ from textwrap import dedent
 logger = logging.getLogger("event_logging")
 
 
-class MyLogsHandler(logging.Handler):
+class CustomLogsHandler(logging.Handler):
     def __init__(self, bot, user_id):
         super().__init__()
         self.bot = bot
@@ -30,7 +30,7 @@ def main():
     devman_token = os.environ.get('DEVMAN_TOKEN')
 
     logger.setLevel(logging.INFO)
-    logger_settings = MyLogsHandler(bot, user_id)
+    logger_settings = CustomLogsHandler(bot, user_id)
     logger_settings.setLevel(logging.INFO)
     logger_settings.setFormatter(logging.Formatter("%(asctime)s: %(levelname)s; %(message)s",
                                                    datefmt="%d/%b/%Y %H:%M:%S"))
