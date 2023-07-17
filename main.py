@@ -9,15 +9,28 @@ from dotenv import load_dotenv
 from textwrap import dedent
 
 
+class MyLogsHandler(logging.Handler):
+    def __int__(self, bot, user_id):
+        self.bot = bot
+        self.user_id = user_id
+
+    def emit(self, record):
+        log_entry = self.format(record)
+        self.bot.send_message(self.user_id, log_entry)
+
+
 def main():
     load_dotenv()
+    bot = telegram.Bot(os.environ.get('TELEGRAM_TOKEN'))
+    user_id = os.environ.get('TELEGRAM_USER_ID')
     devman_token = os.environ.get('DEVMAN_TOKEN')
 
     logger = logging.getLogger("event_logging")
     logger.setLevel(logging.INFO)
-    logger_settings = MyLogsHandler()
+    logger_settings = MyLogsHandler(bot, user_id)
     logger_settings.setLevel(logging.INFO)
-    logger_settings.setFormatter(logging.Formatter("%(asctime)s: %(levelname)s; %(message)s", datefmt="%d/%b/%Y %H:%M:%S"))
+    logger_settings.setFormatter(logging.Formatter("%(asctime)s: %(levelname)s; %(message)s",
+                                                   datefmt="%d/%b/%Y %H:%M:%S"))
     logger.addHandler(logger_settings)
 
     url = 'https://dvmn.org/api/long_polling/'
@@ -60,12 +73,4 @@ def main():
 
 
 if __name__ == '__main__':
-    load_dotenv()
-    bot = telegram.Bot(os.environ.get('TELEGRAM_TOKEN'))
-    user_id = os.environ.get('TELEGRAM_USER_ID')
-
-    class MyLogsHandler(logging.Handler):
-        def emit(self, record):
-            log_entry = self.format(record)
-            bot.send_message(user_id, log_entry)
     main()
