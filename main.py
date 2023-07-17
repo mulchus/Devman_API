@@ -39,7 +39,7 @@ def main():
     url = 'https://dvmn.org/api/long_polling/'
     headers = {'Authorization': f'Token {devman_token}'}
     timeout = 100
-    pause_verification = 600
+    pause_verification = 3600
     payload = {'timestamp': None}
     start_message = 'Стартую. Направляю запрос Devmanу.'
     logger.info(start_message)
