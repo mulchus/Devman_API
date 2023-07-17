@@ -39,7 +39,6 @@ def main():
     url = 'https://dvmn.org/api/long_polling/'
     headers = {'Authorization': f'Token {devman_token}'}
     timeout = 100
-    pause_verification = 3600
     payload = {'timestamp': None}
     start_message = 'Стартую. Направляю запрос Devmanу.'
     logger.info(start_message)
@@ -70,8 +69,6 @@ def main():
         except Exception as err:
             logger.error('Бот упал с ошибкой:')
             logger.exception(err)
-
-        time.sleep(pause_verification)
 
 
 if __name__ == '__main__':
