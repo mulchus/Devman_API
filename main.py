@@ -9,8 +9,12 @@ from dotenv import load_dotenv
 from textwrap import dedent
 
 
+logger = logging.getLogger("event_logging")
+
+
 class MyLogsHandler(logging.Handler):
-    def __int__(self, bot, user_id):
+    def __init__(self, bot, user_id):
+        super().__init__()
         self.bot = bot
         self.user_id = user_id
 
@@ -25,7 +29,6 @@ def main():
     user_id = os.environ.get('TELEGRAM_USER_ID')
     devman_token = os.environ.get('DEVMAN_TOKEN')
 
-    logger = logging.getLogger("event_logging")
     logger.setLevel(logging.INFO)
     logger_settings = MyLogsHandler(bot, user_id)
     logger_settings.setLevel(logging.INFO)
@@ -47,7 +50,6 @@ def main():
             about_checks = response.json()
             if about_checks['status'] == 'timeout':
                 payload['timestamp'] = about_checks['timestamp_to_request']
-                # logger.info('Нет обновлений.')
             elif about_checks['status'] == 'found':
                 payload['timestamp'] = about_checks['last_attempt_timestamp']
                 reply_message = dedent(f'''
