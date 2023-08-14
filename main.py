@@ -23,22 +23,11 @@ class CustomLogsHandler(logging.Handler):
         self.bot.send_message(self.user_id, log_entry)
 
 
-def get_secret(key, default):
-    value = os.getenv(key, default)
-    if os.path.isfile(value):
-        with open(value) as f:
-            return f.read()
-    return value
-
-
 def main():
-    # load_dotenv()
-    # bot = telegram.Bot(os.environ.get('TELEGRAM_TOKEN'))
-    # user_id = os.environ.get('TELEGRAM_USER_ID')
-    # devman_token = os.environ.get('DEVMAN_TOKEN')
-    bot = telegram.Bot(get_secret('TELEGRAM_TOKEN', ''))
-    user_id = get_secret('TELEGRAM_USER_ID', '')
-    devman_token = get_secret('DEVMAN_TOKEN', '')
+    load_dotenv()
+    bot = telegram.Bot(os.environ.get('TELEGRAM_TOKEN'))
+    user_id = os.environ.get('TELEGRAM_USER_ID')
+    devman_token = os.environ.get('DEVMAN_TOKEN')
 
     logger.setLevel(logging.INFO)
     logger_settings = CustomLogsHandler(bot, user_id)
